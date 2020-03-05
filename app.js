@@ -39,6 +39,8 @@ function getDetails(originID, destID) {
 
 function populateResults() {
   if (!routeGroupsList.length) return;
+  // Create a new CSV data file
+  csvData = [];
   var output = `
   <table class="data-table">
   <tr>
@@ -70,13 +72,13 @@ function populateResults() {
       <td>${code}</td>
     </tr>
     `;
-    csvData = [];
     csvData.push([carrier, departure, arrival, code]);
   });
 
   output += `</table>`;
 
   document.querySelector('.results').innerHTML = output;
+  downloadCSV(csvData);
 }
 
 /**
@@ -114,4 +116,4 @@ form.addEventListener('submit', onSubmit);
 
 const resultsDiv = document.querySelector('.results');
 
-populateResults();
+window.addEventListener('DOMContentLoaded', populateResults);
