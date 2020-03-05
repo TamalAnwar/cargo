@@ -1,0 +1,19 @@
+.column {
+  font-weight: bold;
+}
+
+.data-table {
+  border-spacing: 5px;
+}
+
+table,
+th,
+td {
+  border: 1px solid #ddd;
+  border-collapse: collapse;
+  padding: 10px;
+}
+
+th {
+  text-align-last: left;
+}

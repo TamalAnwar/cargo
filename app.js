@@ -20,16 +20,18 @@ function getDetails(originID, destID) {
 
   fetch(URL)
     .then((res) => {
-      console.log(res);
+      console.log('Server response: ', res);
       return res.json();
     })
     .then((res) => {
-      console.log(res);
+      console.log('The JSON objects: ', res);
       routeGroupsList = res.routeGroupsList;
       localStorage.setItem('routeGroupsList', JSON.stringify(routeGroupsList));
       if (routeGroupsList.length) {
         console.log('Items are added! ', routeGroupsList.length);
         populateResults();
+      } else {
+        console.log('Nothing returned from the API :(');
       }
     })
     .catch((err) => console.log(err));
@@ -37,7 +39,15 @@ function getDetails(originID, destID) {
 
 function populateResults() {
   if (!routeGroupsList.length) return;
-  var output = '';
+  var output = `
+  <table class="data-table">
+  <tr>
+    <th>Carrier</th>
+    <th>Departure</th>
+    <th>Arrival</th>
+    <th>Service/Vessel</th>
+  </tr> 
+ `;
   routeGroupsList.forEach((item, index) => {
     let carrier = item.carrier.name;
     let departure = item.por.location.name;
@@ -53,16 +63,18 @@ function populateResults() {
     }
 
     output += `
-    <p>
-    <span>${carrier}</span>
-    <span>${departure}</span>
-    <span>${arrival}</span>
-    <span>${code}</span>
-    </p>
+    <tr>
+      <td>${carrier}</td>
+      <td>${departure}</td>
+      <td>${arrival}</td>
+      <td>${code}</td>
+    </tr>
     `;
     csvData = [];
     csvData.push([carrier, departure, arrival, code]);
   });
+
+  output += `</table>`;
 
   document.querySelector('.results').innerHTML = output;
 }
