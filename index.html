@@ -3,17 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Cargo App</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app">
       <div class="wrapper">
-        <h1>Cargo Details</h1>
+        <h1>Cargo App</h1>
         <div class="form">
           <form action="">
-            <input type="text" name="origin" value="CNSHA" />
-            <input type="text" name="destination" value="SGSIN" />
+            <label for="origin">Enter origin code:</label>
+            <input type="text" name="origin" list="portList" required />
+            <label for="destination">Enter destination code:</label>
+            <input type="text" name="destination" list="portList" required />
+            <datalist id="portList">
+              <option value="CNSHA">Shanghai, China</option>
+              <option value="SGSIN">Singapore</option>
+            </datalist>
             <button>Go</button>
           </form>
         </div>

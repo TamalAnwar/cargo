@@ -1,9 +1,36 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #003366;
+  background: url('img/bg.jpg');
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  color: #333333;
+}
+
+.wrapper {
+  width: 800px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 20px;
+}
+
 .column {
   font-weight: bold;
 }
 
 .data-table {
   border-spacing: 5px;
+}
+
+table {
+  width: 100%;
+  max-width: 100%;
 }
 
 table,
