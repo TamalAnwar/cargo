@@ -1,4 +1,14 @@
+const DEBUG = true;
+function debug(...args) {
+  if (DEBUG) {
+    console.log('DEBUG: ', ...args);
+  }
+}
+
 var csvData = [];
+// Names for the CSV export
+var csvFrom = '';
+var csvTo = '';
 var downloadButton = document.querySelector('.downloadCSV');
 
 const API_KEY = 'ca9c7180-5c54-11ea-b53f-f99d1fc8d999';
@@ -16,7 +26,7 @@ function getDetails(originID, destID) {
 
   const URL = `https://apis.cargosmart.com/openapi/schedules/routeschedules?appKey=${API_KEY}&porID=${originID}&fndID=${destID}`;
 
-  console.log('Calling the API');
+  debug('Calling the API');
 
   fetch(URL)
     .then((res) => {
@@ -24,59 +34,92 @@ function getDetails(originID, destID) {
       return res.json();
     })
     .then((res) => {
-      console.log('The JSON objects: ', res);
-      routeGroupsList = res.routeGroupsList;
-      localStorage.setItem('routeGroupsList', JSON.stringify(routeGroupsList));
-      if (routeGroupsList.length) {
-        console.log('Items are added! ', routeGroupsList.length);
+      debug('The JSON objects: ', res);
+      // Only update with new data when there is something from the API!
+      if (res.routeGroupsList.length) {
+        routeGroupsList = res.routeGroupsList;
+        localStorage.setItem(
+          'routeGroupsList',
+          JSON.stringify(routeGroupsList)
+        );
+        // Update the DOM with the new results
         populateResults();
       } else {
-        console.log('Nothing returned from the API :(');
+        debug('Nothing returned from the API :(');
+        // Do something, like show an error message to the user.
       }
     })
-    .catch((err) => console.log(err));
+    .catch((err) => debug(err));
 }
 
+/**
+ * Updates the DOM with a table with all the items from the API
+ *
+ */
 function populateResults() {
   if (!routeGroupsList.length) return;
+  let count = 0;
   // Create a new CSV data file
   csvData = [];
   var output = `
   <table class="data-table">
   <tr>
-    <th>Carrier</th>
-    <th>Departure</th>
-    <th>Arrival</th>
-    <th>Service/Vessel</th>
+  <th>#</th>
+  <th>Carrier</th>
+  <th>Departure</th>
+  <th>Arrival</th>
+  <th>Service/Vessel</th>
+  <th>Transit Time</th>
   </tr> 
  `;
-  routeGroupsList.forEach((item, index) => {
-    let carrier = item.carrier.name;
-    let departure = item.por.location.name;
-    let arrival = item.fnd.location.name;
-    let code, name;
+  // Run through each of the groups
+  routeGroupsList.forEach((group, index) => {
+    // Now run through each of the items in the group
 
-    if (item.route[0].leg[0].service) {
-      code = item.route[0].leg[0].service.code;
-      name = item.route[0].leg[0].service.name;
-    } else {
-      code = 'N/A';
-      name = 'N/A';
-    }
+    group.route.forEach((item) => {
+      count++;
 
-    output += `
-    <tr>
+      let carrier = group.carrier.name;
+      let { transitTime } = item;
+      let departure = item.por.location.name;
+      let depDate = item.por.etd;
+      let arrival = item.fnd.location.name;
+      let arvDate = item.fnd.eta;
+      let code, name;
+
+      if (item.leg[0].service) {
+        code = item.leg[0].service.code;
+        name = item.leg[0].service.name;
+      }
+
+      output += `
+      <tr>
+      <td>${count}</td>
       <td>${carrier}</td>
-      <td>${departure}</td>
-      <td>${arrival}</td>
-      <td>${code}</td>
-    </tr>
-    `;
-    csvData.push([carrier, departure, arrival, code]);
+      <td>
+        <div>${departure}</div>
+        <small>${moment(depDate).format('D MMM, YYYY (ddd)')}</small>
+      </td>
+      <td>
+        <div>${arrival}</div>
+        <small>${moment(arvDate).format('D MMM, YYYY (ddd)')}</small>
+      </td>
+      <td>
+        <div>${code ? code : ''}</div>
+        <small>${name ? name : ''}</small></td>
+      <td>${transitTime} days</td>
+      </tr>
+      `;
+
+      transitTime += ' days';
+
+      csvData.push([carrier, departure, arrival, code, transitTime]);
+    });
   });
 
   output += `</table>`;
 
+  document.querySelector('.count').innerText = `Total ${count} results`;
   document.querySelector('.results').innerHTML = output;
   downloadCSV(csvData);
 }
@@ -93,12 +136,13 @@ function onSubmit(e) {
   destID = e.target.destination.value;
 
   if (!originID || !destID) return;
-
   getDetails(originID, destID);
+
+  e.target.reset();
 }
 
 function downloadCSV(data) {
-  var csv = 'Carrier,Departure,Arrival,Service/Vessel\n';
+  var csv = 'Carrier,Departure,Arrival,Service/Vessel,Transit Time\n';
   data.forEach((item) => {
     csv += item.join(',');
     csv += '\n';
